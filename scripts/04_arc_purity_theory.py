@@ -108,3 +108,47 @@ plt.tight_layout(rect=[0, 0.04, 1, 0.96])
 fig2.savefig("../outputs/figures/Q8_arc_purity/08b_arc_purity_per_mill.png", dpi=150, bbox_inches="tight")
 print("Figure saved: Q8_arc_purity/08b_arc_purity_per_mill.png")
 plt.close(fig2)
+
+
+# -- Figures 3-4: per mill split by mielera/non-mielera --
+df["mielera"] = df["kg/t_MF"].apply(
+    lambda x: "Mielera" if pd.notna(x) and x > 40 else "Non-mielera"
+)
+
+for group, fname_suffix in [("Mielera", "mielera"), ("Non-mielera", "non_mielera")]:
+    fig_m, axes_m = plt.subplots(2, 4, figsize=(20, 10))
+    fig_m.suptitle(f"AR/C vs Pureza Real — {group} months, per mill", fontsize=14, fontweight="bold")
+    axes_m = axes_m.flatten()
+
+    for i, mill in enumerate(MILLS):
+        ax = axes_m[i]
+        md = df[(df["Ingenio"] == mill) & (df["mielera"] == group)]
+        x = md["AR_Cenizas"].values
+        y = md["Pureza_Real"].values
+
+        ax.scatter(x, y, color=MILL_COLORS[mill], alpha=0.75, s=50, zorder=3)
+
+        if len(x) >= 5:
+            r, p = stats.pearsonr(x, y)
+            slope, intercept = np.polyfit(x, y, 1)
+            x_line = np.linspace(x.min(), x.max(), 100)
+            ax.plot(x_line, slope * x_line + intercept, color="black", linewidth=1.5, linestyle="--", zorder=4)
+            p_str = "p < 0.001" if p < 0.001 else f"p = {p:.3f}"
+            ax.annotate(f"r = {r:.3f}\n{p_str}\nn = {len(x)}",
+                        xy=(0.05, 0.90), xycoords="axes fraction", fontsize=8, verticalalignment="top",
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray", alpha=0.9))
+        else:
+            ax.annotate(f"n = {len(x)}\ninsufficient data",
+                        xy=(0.05, 0.90), xycoords="axes fraction", fontsize=8, verticalalignment="top",
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="gray", alpha=0.9))
+
+        ax.axvline(1.0, color="red", linewidth=1, linestyle=":", alpha=0.7)
+        ax.set_title(mill, fontsize=10, fontweight="bold")
+        ax.set_xlabel("AR/C", fontsize=8)
+        ax.set_ylabel("Pureza Real (%)", fontsize=8)
+        ax.tick_params(labelsize=8)
+
+    plt.tight_layout()
+    fig_m.savefig(f"../outputs/figures/Q8_arc_purity/08c_arc_purity_{fname_suffix}_per_mill.png", dpi=150, bbox_inches="tight")
+    print(f"Figure saved: Q8_arc_purity/08c_arc_purity_{fname_suffix}_per_mill.png")
+    plt.close(fig_m)
