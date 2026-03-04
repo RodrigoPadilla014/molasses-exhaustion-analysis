@@ -97,3 +97,58 @@ scatter_per_cluster(
     "09h_arc_purity_per_cluster",
     "AR/C vs Pureza Real — per cluster"
 )
+
+
+# ── CLUSTER TRAJECTORY PER MILL ACROSS ZAFRAS ─────────────────────────────────
+# For each mill-zafra, assign the most frequent cluster (mode) of that season.
+# Then plot how each mill moves between clusters over the 5 zafras.
+
+ZAFRAS = sorted(df["Zafra"].unique())
+
+trajectory = (
+    df.groupby(["Ingenio", "Zafra"])["cluster"]
+    .agg(lambda x: x.mode()[0])
+    .reset_index()
+)
+trajectory["cluster_label"] = trajectory["cluster"] + 1
+
+# -- Figure: heatmap — mills on Y, zafras on X, color = cluster --
+pivot = trajectory.pivot(index="Ingenio", columns="Zafra", values="cluster_label")
+
+# custom colormap: 1=green (mielera), 2=yellow (normal), 3=red (difficult)
+from matplotlib.colors import ListedColormap
+cmap = ListedColormap(["#4CAF50", "#FFC107", "#F44336"])
+
+fig_traj, ax_traj = plt.subplots(figsize=(10, 6))
+fig_traj.suptitle("Cluster trajectory per mill across zafras", fontsize=13, fontweight="bold")
+
+im = ax_traj.imshow(pivot.values, aspect="auto", cmap=cmap, vmin=0.5, vmax=3.5)
+
+ax_traj.set_xticks(range(len(pivot.columns)))
+ax_traj.set_xticklabels(pivot.columns, fontsize=9, rotation=30)
+ax_traj.set_yticks(range(len(pivot.index)))
+ax_traj.set_yticklabels(pivot.index, fontsize=9)
+
+# annotate each cell with cluster number
+for i in range(len(pivot.index)):
+    for j in range(len(pivot.columns)):
+        val = pivot.iloc[i, j]
+        ax_traj.text(j, i, str(int(val)), ha="center", va="center", fontsize=11, fontweight="bold", color="white")
+
+from matplotlib.patches import Patch
+legend_elements = [
+    Patch(facecolor="#4CAF50", label="Cluster 1 — Mielera"),
+    Patch(facecolor="#FFC107", label="Cluster 2 — Normal"),
+    Patch(facecolor="#F44336", label="Cluster 3 — Difficult"),
+]
+ax_traj.legend(handles=legend_elements, loc="upper right", fontsize=8, bbox_to_anchor=(1.35, 1))
+
+plt.tight_layout()
+fig_traj.savefig("../outputs/figures/Q9_clustering/09i_cluster_trajectory.png", dpi=150, bbox_inches="tight")
+print("Figure saved: Q9_clustering/09i_cluster_trajectory.png")
+plt.close(fig_traj)
+
+# print trajectory table
+print("\n-- Cluster trajectory per mill (mode per zafra) --")
+pivot = trajectory.pivot(index="Ingenio", columns="Zafra", values="cluster_label")
+print(pivot.to_string())
