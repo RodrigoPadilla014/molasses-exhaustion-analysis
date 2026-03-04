@@ -223,3 +223,8 @@ with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
     means_table.round(3).to_excel(writer, sheet_name="Cluster means")
 
 print(f"\nTables exported: {output_path}")
+
+# export cluster labels for use in other scripts
+labels_path = "../outputs/cluster_labels.csv"
+df_cluster[["Ingenio", "Zafra", "Mes", "cluster"]].to_csv(labels_path, index=False)
+print(f"Cluster labels exported: {labels_path}")
