@@ -21,8 +21,8 @@ df["cluster"] = df["cluster"].astype(int)
 MILLS    = sorted(df["Ingenio"].unique())
 CLUSTERS = sorted(df["cluster"].unique())
 MILL_COLORS    = {m: c for m, c in zip(MILLS,    plt.cm.tab10.colors)}
-CLUSTER_COLORS = {c: col for c, col in zip(CLUSTERS, plt.cm.Set1.colors[:len(CLUSTERS)])}
-CLUSTER_LABELS = {0: "Cluster 1 — Mielera", 1: "Cluster 2 — Normal", 2: "Cluster 3 — Difficult"}
+CLUSTER_COLORS = {0: "#F44336", 1: "#4CAF50", 2: "#FF9800"}
+CLUSTER_LABELS = {0: "Cluster 1 — Mielera", 1: "Cluster 2 — Normal", 2: "Cluster 3 — No Mielera"}
 
 os.makedirs("../outputs/figures/Q9_clustering", exist_ok=True)
 
@@ -117,7 +117,7 @@ pivot = trajectory.pivot(index="Ingenio", columns="Zafra", values="cluster_label
 
 # custom colormap: 1=green (mielera), 2=yellow (normal), 3=red (difficult)
 from matplotlib.colors import ListedColormap
-cmap = ListedColormap(["#4CAF50", "#FFC107", "#F44336"])
+cmap = ListedColormap(["#F44336", "#4CAF50", "#FF9800"])
 
 fig_traj, ax_traj = plt.subplots(figsize=(10, 6))
 fig_traj.suptitle("Cluster trajectory per mill across zafras", fontsize=13, fontweight="bold")
@@ -137,9 +137,9 @@ for i in range(len(pivot.index)):
 
 from matplotlib.patches import Patch
 legend_elements = [
-    Patch(facecolor="#4CAF50", label="Cluster 1 — Mielera"),
-    Patch(facecolor="#FFC107", label="Cluster 2 — Normal"),
-    Patch(facecolor="#F44336", label="Cluster 3 — Difficult"),
+    Patch(facecolor="#F44336", label="Cluster 1 — Mielera"),
+    Patch(facecolor="#4CAF50", label="Cluster 2 — Normal"),
+    Patch(facecolor="#FF9800", label="Cluster 3 — No Mielera"),
 ]
 ax_traj.legend(handles=legend_elements, loc="upper right", fontsize=8, bbox_to_anchor=(1.35, 1))
 

@@ -111,7 +111,8 @@ K = 3
 km_final = KMeans(n_clusters=K, random_state=42, n_init=10)
 df_cluster["cluster"] = km_final.fit_predict(X_scaled)
 
-CLUSTER_COLORS = {i: c for i, c in enumerate(plt.cm.Set1.colors[:K])}
+CLUSTER_NAMES  = {0: "Mielera", 1: "Normal", 2: "No Mielera"}
+CLUSTER_COLORS = {0: "#F44336", 1: "#4CAF50", 2: "#FF9800"}
 
 # -- Figure 3: PCA scatter PC1 vs PC2, colored by cluster --
 fig3, ax3 = plt.subplots(figsize=(9, 7))
@@ -120,7 +121,7 @@ fig3.suptitle(f"PCA scatter — k={K} clusters", fontsize=13, fontweight="bold")
 for c in range(K):
     mask = df_cluster["cluster"] == c
     ax3.scatter(X_pca[mask, 0], X_pca[mask, 1],
-                color=CLUSTER_COLORS[c], label=f"Cluster {c+1}",
+                color=CLUSTER_COLORS[c], label=CLUSTER_NAMES[c],
                 alpha=0.75, s=55, zorder=3)
 
 ax3.set_xlabel(f"PC1 ({explained[0]*100:.1f}%)", fontsize=10)
@@ -165,7 +166,7 @@ im = ax5.imshow(cluster_means_scaled.values, aspect="auto", cmap="RdYlGn")
 ax5.set_xticks(range(len(FEATURES)))
 ax5.set_xticklabels(FEATURES, fontsize=9)
 ax5.set_yticks(range(K))
-ax5.set_yticklabels([f"Cluster {i+1}" for i in range(K)], fontsize=9)
+ax5.set_yticklabels([CLUSTER_NAMES[i] for i in range(K)], fontsize=9)
 plt.colorbar(im, ax=ax5, label="Standardized value")
 
 # annotate cells with raw means
